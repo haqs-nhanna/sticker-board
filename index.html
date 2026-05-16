@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Sticker Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFF6E5;
+    --warm: #FFE8B5;
+    --pink: #FF6B9D;
+    --coral: #FF8A65;
+    --yellow: #FFC93C;
+    --mint: #6FCF97;
+    --sky: #5BC0EB;
+    --purple: #B19CD9;
+    --ink: #2D2A4A;
+    --soft-ink: #5C5A7A;
+    --shadow: rgba(45, 42, 74, 0.12);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    overscroll-behavior: none;
+    -webkit-user-select: none; user-select: none;
+  }
+  body {
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(255, 201, 60, 0.18) 0%, transparent 35%),
+      radial-gradient(circle at 85% 80%, rgba(255, 107, 157, 0.15) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(91, 192, 235, 0.08) 0%, transparent 50%);
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 12px 0 20px;
+  }
+  .header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 36px;
+    margin: 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--pink), var(--coral), var(--yellow));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .header .sub {
+    font-size: 13px;
+    color: var(--soft-ink);
+    margin-top: 4px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Kid selector */
+  .kid-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 4px 12px;
+    margin: 0 -4px;
+    scrollbar-width: none;
+  }
+  .kid-tabs::-webkit-scrollbar { display: none; }
+  .kid-tab {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    border-radius: 20px;
+    background: white;
+    border: 2px solid transparent;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--soft-ink);
+    cursor: pointer;
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: transform 0.15s, background 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .kid-tab.active {
+    background: var(--ink);
+    color: var(--cream);
+    transform: scale(1.05);
+  }
+  .kid-tab.add {
+    background: transparent;
+    border: 2px dashed var(--soft-ink);
+    box-shadow: none;
+    opacity: 0.6;
+  }
+  .kid-tab:active { transform: scale(0.95); }
+
+  /* Reward card */
+  .reward-card {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 20px var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .reward-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    background: linear-gradient(135deg, var(--yellow), var(--coral));
+    border-radius: 50%;
+    opacity: 0.15;
+  }
+  .reward-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--soft-ink);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .reward-goal {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 22px;
+    margin: 0 0 12px 0;
+    position: relative;
+  }
+  .reward-goal .edit-btn {
+    background: none; border: none; padding: 6px;
+    font-size: 16px; cursor: pointer; opacity: 0.4;
+    vertical-align: middle;
+  }
+  .progress-row {
+    display: flex; align-items: baseline; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .progress-count {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 32px;
+    color: var(--ink);
+  }
+  .progress-total {
+    font-size: 18px; font-weight: 700; color: var(--soft-ink);
+  }
+  .progress-bar {
+    height: 14px;
+    background: var(--warm);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pink), var(--coral), var(--yellow));
+    border-radius: 10px;
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 2s infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Sticker grid */
+  .sticker-section {
+    background: white;
+    border-radius: 24px;
+    padding: 20px 16px;
+    box-shadow: 0 4px 20px var(--shadow);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 18px;
+    margin: 0 0 14px 4px;
+  }
+  .sticker-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .slot {
+    aspect-ratio: 1;
+    border-radius: 16px;
+    background: var(--cream);
+    border: 2px dashed rgba(92, 90, 122, 0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .slot:active { transform: scale(0.92); }
+  .slot.filled {
+    border: none;
+    background: linear-gradient(135deg, var(--yellow), var(--coral));
+    box-shadow: 0 3px 10px rgba(255, 138, 101, 0.35);
+    animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes pop {
+    0% { transform: scale(0); }
+    60% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  /* Action bar */
+  .actions {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, var(--cream) 70%, rgba(255, 246, 229, 0));
+    padding: 20px 16px 24px;
+    z-index: 50;
+  }
+  .actions-inner {
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    gap: 10px;
+  }
+  .btn-big {
+    flex: 1;
+    height: 64px;
+    border-radius: 20px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.1s;
+    box-shadow: 0 6px 20px var(--shadow);
+  }
+  .btn-big:active { transform: scale(0.96); }
+  .btn-add {
+    background: linear-gradient(135deg, var(--pink), var(--coral));
+    color: white;
+    flex: 2;
+  }
+  .btn-remove {
+    background: white;
+    color: var(--ink);
+    border: 2px solid rgba(45, 42, 74, 0.1);
+  }
+  .btn-emoji { font-size: 22px; }
+
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(45, 42, 74, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-bg.show { display: flex; animation: fadein 0.2s; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: white;
+    border-radius: 28px;
+    padding: 28px 24px;
+    width: 100%; max-width: 360px;
+    text-align: center;
+    animation: slideup 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes slideup {
+    from { transform: translateY(40px) scale(0.9); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  .modal h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 24px;
+    margin: 0 0 16px;
+  }
+  .modal input, .modal textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 2px solid var(--warm);
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    background: var(--cream);
+    margin-bottom: 12px;
+  }
+  .modal textarea {
+    min-height: 92px;
+    resize: vertical;
+  }
+  .modal input:focus, .modal textarea:focus { outline: none; border-color: var(--coral); }
+  .modal-row { display: flex; gap: 10px; margin-top: 8px; }
+  .modal-btn {
+    flex: 1;
+    height: 52px;
+    border-radius: 16px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .modal-btn.primary { background: var(--ink); color: white; }
+  .modal-btn.danger { background: var(--pink); color: white; }
+  .modal-btn.secondary { background: var(--warm); color: var(--ink); }
+  .modal-btn:active { transform: scale(0.96); }
+
+  /* Sticker picker */
+  .sticker-picker {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .picker-item {
+    aspect-ratio: 1;
+    border-radius: 14px;
+    background: var(--cream);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .picker-item.selected {
+    border-color: var(--coral);
+    background: var(--warm);
+    transform: scale(1.05);
+  }
+  .picker-item:active { transform: scale(0.92); }
+
+  /* Celebration overlay */
+  .celebrate {
+    position: fixed; inset: 0;
+    z-index: 200;
+    pointer-events: none;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .celebrate.show { display: flex; pointer-events: auto; }
+  .celebrate-card {
+    background: white;
+    border-radius: 32px;
+    padding: 40px 32px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 320px;
+  }
+  @keyframes bounce-in {
+    0% { transform: scale(0) rotate(-20deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .celebrate-emoji {
+    font-size: 80px;
+    animation: wiggle 0.6s ease-in-out infinite;
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+  }
+  .celebrate h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 32px;
+    margin: 16px 0 8px;
+    background: linear-gradient(135deg, var(--pink), var(--coral), var(--yellow));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .celebrate p {
+    font-size: 18px; font-weight: 700; color: var(--soft-ink);
+    margin: 0 0 20px;
+  }
+  .confetti {
+    position: absolute;
+    width: 12px; height: 12px;
+    pointer-events: none;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Menu button */
+  .menu-btn {
+    position: absolute;
+    top: 20px; right: 20px;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    box-shadow: 0 2px 8px var(--shadow);
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .header-wrap { position: relative; }
+
+  .empty-hint {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--soft-ink);
+    font-weight: 600;
+  }
+  .empty-hint .big { font-size: 48px; margin-bottom: 8px; }
+
+  .history-list {
+    max-height: 280px;
+    overflow-y: auto;
+    text-align: left;
+    margin: 12px 0;
+  }
+  .history-item {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--cream);
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex; justify-content: space-between;
+  }
+
+  /* Reward tracker */
+  .tracker-modal {
+    max-width: 420px;
+    text-align: left;
+  }
+  .tracker-modal h2 { text-align: center; }
+  .tracker-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 8px 0 14px;
+  }
+  .tracker-stat {
+    background: var(--cream);
+    border-radius: 16px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .tracker-stat .num {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .tracker-stat .label {
+    font-size: 10px;
+    color: var(--soft-ink);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+  .tracker-kid-section {
+    margin: 12px 0 14px;
+  }
+  .tracker-kid-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-weight: 900;
+    color: var(--ink);
+    margin: 0 0 8px;
+    padding: 0 2px;
+  }
+  .tracker-kid-title .count-badge {
+    background: var(--warm);
+    color: var(--ink);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 4px 8px;
+    white-space: nowrap;
+  }
+  .tracker-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: var(--cream);
+    margin-bottom: 7px;
+  }
+  .tracker-reward {
+    font-weight: 800;
+    font-size: 14px;
+  }
+  .tracker-meta {
+    color: var(--soft-ink);
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .tracker-date {
+    color: var(--soft-ink);
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .tracker-empty {
+    text-align: center;
+    padding: 24px 14px;
+    color: var(--soft-ink);
+    font-weight: 700;
+    background: var(--cream);
+    border-radius: 16px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header-wrap">
+    <button class="menu-btn" onclick="openMenu()">⚙️</button>
+    <div class="header">
+      <h1>Sticker Board</h1>
+      <div class="sub">👨‍👩‍👧 Shared board · Live</div>
+    </div>
+  </div>
+
+  <div class="kid-tabs" id="kidTabs"></div>
+
+  <div id="mainContent"></div>
+</div>
+
+<div class="actions">
+  <div class="actions-inner">
+    <button class="btn-big btn-remove" onclick="removeSticker()">
+      <span class="btn-emoji">↺</span> Remove
+    </button>
+    <button class="btn-big btn-add" onclick="addSticker()">
+      <span class="btn-emoji">⭐</span> Add Sticker
+    </button>
+  </div>
+</div>
+
+<!-- Add kid modal -->
+<div class="modal-bg" id="addKidModal">
+  <div class="modal">
+    <h2>Add a Kid 🎉</h2>
+    <input type="text" id="newKidName" placeholder="Name" maxlength="20" />
+    <div class="modal-row">
+      <button class="modal-btn secondary" onclick="closeModal('addKidModal')">Cancel</button>
+      <button class="modal-btn primary" onclick="saveNewKid()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit reward modal -->
+<div class="modal-bg" id="editRewardModal">
+  <div class="modal">
+    <h2>Set Reward 🎁</h2>
+    <input type="text" id="rewardText" placeholder="What's the reward?" maxlength="40" />
+    <input type="number" id="rewardGoal" placeholder="Stickers needed" min="1" max="100" />
+    <div style="font-size: 13px; color: var(--soft-ink); margin: 8px 0;">Choose sticker style:</div>
+    <div class="sticker-picker" id="stickerPicker"></div>
+    <div class="modal-row">
+      <button class="modal-btn secondary" onclick="closeModal('editRewardModal')">Cancel</button>
+      <button class="modal-btn primary" onclick="saveReward()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings/menu modal -->
+<div class="modal-bg" id="menuModal">
+  <div class="modal">
+    <h2>Settings</h2>
+    <div class="modal-row" style="flex-direction: column; gap: 8px;">
+      <button class="modal-btn secondary" onclick="closeModal('menuModal'); editReward()">✏️ Edit Reward & Sticker</button>
+      <button class="modal-btn secondary" onclick="closeModal('menuModal'); showRewardTracker()">📊 Reward Tracker</button>
+      <button class="modal-btn secondary" onclick="closeModal('menuModal'); resetBoard()">🔄 Reset Current Board</button>
+      <button class="modal-btn danger" onclick="closeModal('menuModal'); deleteKid()">🗑️ Delete This Kid</button>
+      <button class="modal-btn primary" onclick="closeModal('menuModal')" style="margin-top: 8px;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal">
+    <h2 id="confirmTitle">Are you sure?</h2>
+    <p id="confirmText" style="color: var(--soft-ink); font-weight: 600; margin: 0 0 16px;"></p>
+    <div class="modal-row">
+      <button class="modal-btn secondary" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="modal-btn danger" id="confirmYes">Yes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reward tracker modal -->
+<div class="modal-bg" id="historyModal">
+  <div class="modal tracker-modal">
+    <h2>🏆 Reward Tracker</h2>
+    <div class="tracker-summary" id="trackerSummary"></div>
+    <div class="history-list tracker-list" id="historyList"></div>
+    <button class="modal-btn primary" onclick="closeModal('historyModal')">Close</button>
+  </div>
+</div>
+
+<!-- Claim reward details modal -->
+<div class="modal-bg" id="claimRewardModal">
+  <div class="modal">
+    <h2>Reward Given 🎁</h2>
+    <p id="claimRewardPrompt" style="color: var(--soft-ink); font-weight: 700; margin: 0 0 14px;"></p>
+    <textarea id="actualRewardDetails" placeholder="What reward was actually given? e.g. Ice cream after dinner, 30 minutes playground, small toy" maxlength="120"></textarea>
+    <input type="date" id="actualRewardDate" />
+    <div class="modal-row">
+      <button class="modal-btn secondary" onclick="closeModal('claimRewardModal')">Cancel</button>
+      <button class="modal-btn primary" onclick="saveClaimedReward()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Celebration -->
+<div class="celebrate" id="celebrate" onclick="closeCelebration()">
+  <div class="celebrate-card" onclick="event.stopPropagation()">
+    <div class="celebrate-emoji">🎉</div>
+    <h2 id="celebrateTitle">YOU DID IT!</h2>
+    <p id="celebrateText">You earned your reward!</p>
+    <button class="modal-btn primary" style="width: 100%;" onclick="openClaimRewardModal(event)">🎁 Log Reward</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+  // Firebase connection for your family sticker board
+  const firebaseConfig = {
+    apiKey: "AIzaSyBERHtjIDMS8NrA3Fuss8LcYdZYtiY0-fs",
+    authDomain: "sticker-board-hn.firebaseapp.com",
+    projectId: "sticker-board-hn",
+    storageBucket: "sticker-board-hn.firebasestorage.app",
+    messagingSenderId: "754186304066",
+    appId: "1:754186304066:web:b79b67abf1d58c0f0b0bdb"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const boardRef = doc(db, 'stickerBoards', 'family');
+
+  const STICKER_OPTIONS = ['⭐', '🌟', '❤️', '🦄', '🌈', '🎨', '🚀', '🐶', '🐱', '🦖', '🍕', '🍦', '⚽', '🎵', '🌸'];
+  const SAVE_KEY = 'sticker-board-v1'; // kept only for fallback/debug naming
+
+  let state = {
+    kids: [],
+    activeKidId: null
+  };
+  let selectedSticker = '⭐';
+
+  // ---------- Persistence (shared across parents through Firebase Firestore) ----------
+  function getDefaultState() {
+    const firstKid = {
+      id: Date.now().toString(),
+      name: 'My Kid',
+      stickers: 0,
+      goal: 10,
+      reward: 'A special treat!',
+      stickerEmoji: '⭐',
+      history: []
+    };
+    return {
+      kids: [firstKid],
+      activeKidId: firstKid.id
+    };
+  }
+
+  async function loadState() {
+    try {
+      const snap = await getDoc(boardRef);
+      if (snap.exists()) {
+        const saved = snap.data();
+        if (saved.data) {
+          state = typeof saved.data === 'string' ? JSON.parse(saved.data) : saved.data;
+        } else {
+          state = saved;
+        }
+      } else {
+        state = getDefaultState();
+        await saveState();
+      }
+    } catch (e) {
+      console.error('Firebase load failed', e);
+      state = getDefaultState();
+      alert('Could not load the shared board from Firebase. Please check your Firestore rules and internet connection.');
+    }
+
+    if (!state.kids || state.kids.length === 0) {
+      state = getDefaultState();
+      await saveState();
+    }
+    if (!state.activeKidId || !state.kids.find(k => k.id === state.activeKidId)) {
+      state.activeKidId = state.kids[0]?.id || null;
+    }
+  }
+
+  async function saveState() {
+    try {
+      const payload = JSON.stringify(state);
+      await setDoc(boardRef, {
+        data: payload,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+      lastSavedSnapshot = payload;
+    } catch (e) {
+      console.error('Firebase save failed', e);
+      alert('Could not save to Firebase. Please check your Firestore rules and internet connection.');
+    }
+  }
+
+  // ---------- Rendering ----------
+  function getActiveKid() {
+    return state.kids.find(k => k.id === state.activeKidId);
+  }
+
+  function renderKidTabs() {
+    const wrap = document.getElementById('kidTabs');
+    wrap.innerHTML = '';
+    state.kids.forEach(kid => {
+      const btn = document.createElement('button');
+      btn.className = 'kid-tab' + (kid.id === state.activeKidId ? ' active' : '');
+      btn.innerHTML = `<span>${kid.stickerEmoji}</span> ${escapeHtml(kid.name)}`;
+      btn.onclick = () => switchKid(kid.id);
+      wrap.appendChild(btn);
+    });
+    const addBtn = document.createElement('button');
+    addBtn.className = 'kid-tab add';
+    addBtn.textContent = '+ Add Kid';
+    addBtn.onclick = openAddKid;
+    wrap.appendChild(addBtn);
+  }
+
+  function renderMain() {
+    const kid = getActiveKid();
+    const main = document.getElementById('mainContent');
+    if (!kid) {
+      main.innerHTML = '<div class="empty-hint"><div class="big">👋</div>Add a kid to get started!</div>';
+      return;
+    }
+    const pct = Math.min(100, (kid.stickers / kid.goal) * 100);
+    const slots = [];
+    for (let i = 0; i < kid.goal; i++) {
+      const filled = i < kid.stickers;
+      slots.push(`<div class="slot ${filled ? 'filled' : ''}">${filled ? kid.stickerEmoji : ''}</div>`);
+    }
+    main.innerHTML = `
+      <div class="reward-card">
+        <div class="reward-label">Working Toward</div>
+        <h3 class="reward-goal">${escapeHtml(kid.reward)}</h3>
+        <div class="progress-row">
+          <span class="progress-count">${kid.stickers}</span>
+          <span class="progress-total">/ ${kid.goal} stickers</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%"></div></div>
+      </div>
+      <div class="sticker-section">
+        <h3 class="section-title">${kid.name}'s Stickers</h3>
+        <div class="sticker-grid">${slots.join('')}</div>
+      </div>
+    `;
+  }
+
+  function render() {
+    renderKidTabs();
+    renderMain();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- Actions ----------
+  async function switchKid(id) {
+    state.activeKidId = id;
+    await saveState();
+    render();
+  }
+
+  async function addSticker() {
+    const kid = getActiveKid();
+    if (!kid) return;
+    if (kid.stickers >= kid.goal) {
+      celebrate();
+      return;
+    }
+    kid.stickers++;
+    await saveState();
+    render();
+    if (kid.stickers >= kid.goal) {
+      setTimeout(() => celebrate(), 400);
+    }
+  }
+
+  function removeSticker() {
+    const kid = getActiveKid();
+    if (!kid || kid.stickers === 0) return;
+    showConfirm('Remove a sticker?', `${kid.name} will go from ${kid.stickers} to ${kid.stickers - 1} stickers.`, async () => {
+      kid.stickers = Math.max(0, kid.stickers - 1);
+      await saveState();
+      render();
+      closeModal('confirmModal');
+    });
+  }
+
+  // ---------- Celebration ----------
+  function celebrate() {
+    const kid = getActiveKid();
+    if (!kid) return;
+    document.getElementById('celebrateTitle').textContent = `${kid.name} did it!`;
+    document.getElementById('celebrateText').textContent = `Time for: ${kid.reward}`;
+    document.getElementById('celebrate').classList.add('show');
+    launchConfetti();
+  }
+
+  function closeCelebration() {
+    document.getElementById('celebrate').classList.remove('show');
+  }
+
+  function openClaimRewardModal(event) {
+    if (event) event.stopPropagation();
+    const kid = getActiveKid();
+    if (!kid) return;
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+
+    document.getElementById('claimRewardPrompt').textContent = `Planned reward for ${kid.name}: ${kid.reward}`;
+    document.getElementById('actualRewardDetails').value = kid.reward || '';
+    document.getElementById('actualRewardDate').value = `${yyyy}-${mm}-${dd}`;
+    closeCelebration();
+    openModal('claimRewardModal');
+    setTimeout(() => document.getElementById('actualRewardDetails').focus(), 100);
+  }
+
+  async function saveClaimedReward() {
+    const kid = getActiveKid();
+    if (!kid) return;
+
+    const rewardDetails = document.getElementById('actualRewardDetails').value.trim();
+    const rewardDate = document.getElementById('actualRewardDate').value;
+    if (!rewardDetails) return;
+
+    if (!kid.history) kid.history = [];
+    kid.history.unshift({
+      reward: rewardDetails,
+      plannedReward: kid.reward,
+      date: rewardDate ? new Date(rewardDate + 'T12:00:00').toISOString() : new Date().toISOString(),
+      goal: kid.goal,
+      stickersCompleted: kid.stickers,
+      stickerEmoji: kid.stickerEmoji
+    });
+    kid.stickers = 0;
+    await saveState();
+    closeModal('claimRewardModal');
+    render();
+  }
+
+  function launchConfetti() {
+    const colors = ['#FF6B9D', '#FF8A65', '#FFC93C', '#6FCF97', '#5BC0EB', '#B19CD9'];
+    const container = document.getElementById('celebrate');
+    for (let i = 0; i < 60; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.left = Math.random() * 100 + '%';
+      c.style.top = '-20px';
+      c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      c.style.animation = `fall ${2 + Math.random() * 2}s linear ${Math.random() * 0.5}s forwards`;
+      container.appendChild(c);
+      setTimeout(() => c.remove(), 5000);
+    }
+  }
+
+  // ---------- Modals ----------
+  function openModal(id) {
+    document.getElementById(id).classList.add('show');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+    if (!anyModalOpen() && pendingRemoteState) {
+      const incoming = pendingRemoteState;
+      pendingRemoteState = null;
+      applyIncomingState(incoming);
+    }
+  }
+
+  function openAddKid() {
+    document.getElementById('newKidName').value = '';
+    openModal('addKidModal');
+    setTimeout(() => document.getElementById('newKidName').focus(), 100);
+  }
+
+  async function saveNewKid() {
+    const name = document.getElementById('newKidName').value.trim();
+    if (!name) return;
+    const newKid = {
+      id: Date.now().toString(),
+      name,
+      stickers: 0,
+      goal: 10,
+      reward: 'A special treat!',
+      stickerEmoji: STICKER_OPTIONS[Math.floor(Math.random() * STICKER_OPTIONS.length)],
+      history: []
+    };
+    state.kids.push(newKid);
+    state.activeKidId = newKid.id;
+    await saveState();
+    closeModal('addKidModal');
+    render();
+  }
+
+  function openMenu() {
+    if (!getActiveKid()) {
+      openAddKid();
+      return;
+    }
+    openModal('menuModal');
+  }
+
+  function editReward() {
+    const kid = getActiveKid();
+    if (!kid) return;
+    document.getElementById('rewardText').value = kid.reward;
+    document.getElementById('rewardGoal').value = kid.goal;
+    selectedSticker = kid.stickerEmoji;
+    renderStickerPicker();
+    openModal('editRewardModal');
+  }
+
+  function renderStickerPicker() {
+    const wrap = document.getElementById('stickerPicker');
+    wrap.innerHTML = '';
+    STICKER_OPTIONS.forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'picker-item' + (s === selectedSticker ? ' selected' : '');
+      el.textContent = s;
+      el.onclick = () => {
+        selectedSticker = s;
+        renderStickerPicker();
+      };
+      wrap.appendChild(el);
+    });
+  }
+
+  async function saveReward() {
+    const kid = getActiveKid();
+    if (!kid) return;
+    const text = document.getElementById('rewardText').value.trim();
+    const goal = parseInt(document.getElementById('rewardGoal').value, 10);
+    if (!text || isNaN(goal) || goal < 1) return;
+    kid.reward = text;
+    kid.goal = goal;
+    kid.stickerEmoji = selectedSticker;
+    if (kid.stickers > goal) kid.stickers = goal;
+    await saveState();
+    closeModal('editRewardModal');
+    render();
+  }
+
+  function resetBoard() {
+    const kid = getActiveKid();
+    if (!kid) return;
+    showConfirm('Reset board?', `${kid.name}'s sticker count will go back to 0. (History is kept.)`, async () => {
+      kid.stickers = 0;
+      await saveState();
+      render();
+      closeModal('confirmModal');
+    });
+  }
+
+  function deleteKid() {
+    const kid = getActiveKid();
+    if (!kid) return;
+    showConfirm(`Delete ${kid.name}?`, 'This removes the kid and all their data. This cannot be undone.', async () => {
+      state.kids = state.kids.filter(k => k.id !== kid.id);
+      state.activeKidId = state.kids[0]?.id || null;
+      await saveState();
+      closeModal('confirmModal');
+      render();
+    });
+  }
+
+  function showConfirm(title, text, onYes) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmText').textContent = text;
+    const btn = document.getElementById('confirmYes');
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.onclick = onYes;
+    openModal('confirmModal');
+  }
+
+  function formatTrackerDate(value) {
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return 'No date';
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function getRewardEntries() {
+    const entries = [];
+    state.kids.forEach(kid => {
+      (kid.history || []).forEach(item => {
+        entries.push({
+          kidName: kid.name,
+          kidEmoji: kid.stickerEmoji || '⭐',
+          reward: item.reward || 'Reward completed',
+          goal: item.goal || kid.goal,
+          date: item.date || item.completedAt || new Date().toISOString()
+        });
+      });
+    });
+    return entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  function showRewardTracker() {
+    const list = document.getElementById('historyList');
+    const summary = document.getElementById('trackerSummary');
+    const entries = getRewardEntries();
+    const totalRewards = entries.length;
+    const kidsWithRewards = state.kids.filter(k => (k.history || []).length > 0).length;
+    const latestDate = entries[0] ? formatTrackerDate(entries[0].date) : '—';
+
+    summary.innerHTML = `
+      <div class="tracker-stat"><div class="num">${totalRewards}</div><div class="label">Completed</div></div>
+      <div class="tracker-stat"><div class="num">${kidsWithRewards}</div><div class="label">Kids</div></div>
+      <div class="tracker-stat"><div class="num" style="font-size: 15px; line-height: 1.2;">${latestDate}</div><div class="label">Latest</div></div>
+    `;
+
+    if (entries.length === 0) {
+      list.innerHTML = '<div class="tracker-empty">No completed rewards yet. When a reward is claimed, it will appear here with the date. 🌟</div>';
+      openModal('historyModal');
+      return;
+    }
+
+    list.innerHTML = state.kids.map(kid => {
+      const history = (kid.history || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+      if (history.length === 0) return '';
+      const rows = history.map(item => {
+        const planned = item.plannedReward && item.plannedReward !== item.reward
+          ? `<div class="tracker-meta">Planned: ${escapeHtml(item.plannedReward)}</div>`
+          : '';
+        return `
+          <div class="tracker-row">
+            <div>
+              <div class="tracker-reward">🎁 ${escapeHtml(item.reward || 'Reward completed')}</div>
+              <div class="tracker-meta">Goal completed: ${item.goal || kid.goal} stickers</div>
+              ${planned}
+            </div>
+            <div class="tracker-date">${formatTrackerDate(item.date || item.completedAt)}</div>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="tracker-kid-section">
+          <div class="tracker-kid-title">
+            <span>${kid.stickerEmoji || '⭐'} ${escapeHtml(kid.name)}</span>
+            <span class="count-badge">${history.length} completed</span>
+          </div>
+          ${rows}
+        </div>
+      `;
+    }).join('');
+
+    openModal('historyModal');
+  }
+
+  // ---------- Live sync ----------
+  let lastSavedSnapshot = '';
+  let pendingRemoteState = null;
+
+  function anyModalOpen() {
+    return document.querySelectorAll('.modal-bg.show').length > 0
+      || document.getElementById('celebrate').classList.contains('show');
+  }
+
+  function applyIncomingState(incoming) {
+    const prevActiveKidId = state.activeKidId;
+    state = incoming;
+    // Keep the current kid tab selected if that kid still exists
+    if (prevActiveKidId && state.kids?.find(k => k.id === prevActiveKidId)) {
+      state.activeKidId = prevActiveKidId;
+    }
+    if (!state.activeKidId || !state.kids?.find(k => k.id === state.activeKidId)) {
+      state.activeKidId = state.kids?.[0]?.id || null;
+    }
+    render();
+  }
+
+  function startRealtimeSync() {
+    onSnapshot(boardRef, (snap) => {
+      if (!snap.exists()) return;
+      const saved = snap.data();
+      const payload = saved.data;
+      if (!payload || payload === lastSavedSnapshot) return;
+
+      const incoming = typeof payload === 'string' ? JSON.parse(payload) : payload;
+      lastSavedSnapshot = typeof payload === 'string' ? payload : JSON.stringify(payload);
+
+      if (anyModalOpen()) {
+        pendingRemoteState = incoming;
+      } else {
+        applyIncomingState(incoming);
+      }
+    }, (error) => {
+      console.error('Firebase live sync failed', error);
+    });
+  }
+
+  // Make inline onclick handlers work with module-based Firebase code
+  Object.assign(window, {
+    addSticker,
+    removeSticker,
+    closeCelebration,
+    openClaimRewardModal,
+    saveClaimedReward,
+    closeModal,
+    saveNewKid,
+    openMenu,
+    editReward,
+    saveReward,
+    resetBoard,
+    deleteKid,
+    showRewardTracker
+  });
+
+  // ---------- Init ----------
+  (async () => {
+    await loadState();
+    lastSavedSnapshot = JSON.stringify(state);
+    render();
+    startRealtimeSync();
+  })();
+</script>
+</body>
+</html>
